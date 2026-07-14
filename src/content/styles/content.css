@@ -1,0 +1,180 @@
+/* Content script styles — injected into every page */
+/* Uses a unique namespace prefix to avoid collision with page styles */
+
+.clipiq-overlay-root {
+  all: initial;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Floating controls container */
+.clipiq-controls {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(13, 13, 16, 0.92);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 100px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  animation: clipiq-slide-up 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  cursor: move;
+  user-select: none;
+}
+
+.clipiq-controls.clipiq-hide {
+  animation: clipiq-slide-down 200ms ease forwards;
+}
+
+@keyframes clipiq-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@keyframes clipiq-slide-down {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
+}
+
+/* Timer display */
+.clipiq-timer {
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f5f5f7;
+  letter-spacing: 1.5px;
+  min-width: 72px;
+  text-align: center;
+}
+
+/* Recording indicator dot */
+.clipiq-rec-dot {
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  animation: clipiq-pulse 1.5s ease infinite;
+}
+
+@keyframes clipiq-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(239, 68, 68, 0.6); }
+  50%       { opacity: 0.7; box-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+}
+
+/* Separator */
+.clipiq-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+/* Action buttons */
+.clipiq-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.clipiq-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: scale(1.1);
+}
+
+.clipiq-btn:active { transform: scale(0.95); }
+
+/* Stop button — red */
+.clipiq-btn-stop {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.clipiq-btn-stop:hover {
+  background: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+}
+
+/* Active state for tools like draw */
+.clipiq-btn.clipiq-active {
+  background: rgba(124, 58, 237, 0.3);
+  color: #a78bfa;
+  border: 1px solid rgba(124, 58, 237, 0.4);
+}
+
+/* Pause/resume indicator */
+.clipiq-paused .clipiq-rec-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  animation: none;
+}
+
+/* Upload state */
+.clipiq-uploading .clipiq-timer {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0;
+}
+
+/* Logo mark */
+.clipiq-logo {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* ─── Camera Bubble ──────────────────────────────────────────────────────────── */
+
+.clipiq-camera-bubble {
+  position: fixed;
+  z-index: 2147483646; /* Just below controls */
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1f1f2a;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  cursor: move;
+  animation: clipiq-scale-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.clipiq-camera-bubble video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; /* Let drag events pass to the container */
+}
+
+@keyframes clipiq-scale-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
