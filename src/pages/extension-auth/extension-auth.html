@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClipIQ — Extension Auth</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px 24px;
+      background: #0d0d10;
+      color: #f5f5f7;
+      font-family: 'Manrope', -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      text-align: center;
+      max-width: 360px;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(124,58,237,0.3);
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.5); margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>Connecting to ClipIQ…</h2>
+    <p>This window will close automatically.</p>
+  </div>
+  <script type="module" src="./extension-auth.ts"></script>
+</body>
+</html>
