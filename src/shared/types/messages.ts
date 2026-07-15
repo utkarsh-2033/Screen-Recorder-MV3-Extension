@@ -69,7 +69,8 @@ export interface StartRecordingPayload {
 export interface StartCapturePayload {
   mode: RecordingMode;
   quality: VideoQuality;
-  streamId?: string;        // For tab/screen/window capture (from desktopCapture/tabCapture)
+  streamId?: string;        // For tab capture only (from tabCapture.getMediaStreamId)
+  preferWindow?: boolean;   // For screen capture: true = window picker, false = full screen picker
   audioDeviceId?: string;
   includeMic: boolean;
   filename: string;

@@ -517,9 +517,19 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.runtime.onInstalled.addListener(handleInstall);
 chrome.runtime.onStartup.addListener(handleStartup);
 
-// Helper to gracefully inject and show controls
+// Helper to gracefully inject and show controls into any tab
 async function ensureControlsOnTab(tabId: number, tabUrl?: string) {
-  if (!tabUrl || tabUrl.startsWith('chrome://') || tabUrl.startsWith('edge://')) return;
+  // Skip chrome:// pages, extension pages, and non-http pages
+  if (!tabUrl) return;
+  if (
+    tabUrl.startsWith('chrome://') ||
+    tabUrl.startsWith('chrome-extension://') ||
+    tabUrl.startsWith('edge://') ||
+    tabUrl.startsWith('about:') ||
+    tabUrl.startsWith('data:')
+  ) return;
+
+  // Only act when recording is active
   if (
     recordingState !== RecordingState.RECORDING &&
     recordingState !== RecordingState.PAUSED &&
@@ -532,42 +542,50 @@ async function ensureControlsOnTab(tabId: number, tabUrl?: string) {
     audioDeviceId: recordingSession?.audioDeviceId,
   };
 
+  const message = { type: MSG.SHOW_CONTROLS, payload } as ExtensionMessage;
+
+  // First attempt — content script may already be running (existing tab / MV3 auto-injection)
   try {
-    // Try sending first; if content script exists, this works
-    await chrome.tabs.sendMessage(tabId, { type: MSG.SHOW_CONTROLS, payload } as ExtensionMessage);
-  } catch (err) {
-    // If it fails, the script is missing (tab loaded before extension). Dynamically inject!
-    try {
-      await chrome.scripting.insertCSS({
-        target: { tabId },
-        files: ['src/content/styles/content.css']
-      });
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        files: ['src/content/content.js']
-      });
-      // Try sending again after injection
-      await chrome.tabs.sendMessage(tabId, { type: MSG.SHOW_CONTROLS, payload } as ExtensionMessage);
-    } catch (injectErr) {
-      logger.error('Failed to dynamically inject content script', injectErr);
-    }
+    await chrome.tabs.sendMessage(tabId, message);
+    return; // Success — content script was already there
+  } catch {
+    // Content script not running — either tab loaded before extension, or
+    // was opened during this session but script hasn't started yet.
+  }
+
+  // Dynamically inject content script + CSS
+  try {
+    await chrome.scripting.insertCSS({
+      target: { tabId },
+      files: ['src/content/styles/content.css'],
+    });
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['src/content/content.js'],
+    });
+    // Give the script a tick to register its message listener
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await chrome.tabs.sendMessage(tabId, message);
+  } catch (injectErr) {
+    // Tab may have navigated away or be a restricted page — ignore silently
+    logger.debug('Could not inject controls into tab', { tabId, err: String(injectErr) });
   }
 }
 
-// Re-inject controls if a user navigates or opens a new tab during an active recording
+// Re-inject controls when a tab finishes loading (navigation during recording)
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     ensureControlsOnTab(tabId, tab.url);
   }
 });
 
-// Show controls immediately when switching to an already opened tab
+// Re-inject controls immediately when switching to an already-open tab
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
     ensureControlsOnTab(activeInfo.tabId, tab.url);
-  } catch (err) {
-    // Ignore errors if tab doesn't exist
+  } catch {
+    // Tab gone — ignore
   }
 });
 

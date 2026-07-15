@@ -55,7 +55,6 @@ export default defineConfig(({ mode }) => ({
 
           permissions: [
             'tabCapture',
-            'desktopCapture',
             'offscreen',
             'storage',
             'tabs',
