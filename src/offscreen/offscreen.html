@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClipIQ Offscreen — Recording Engine</title>
+    <!--
+      This page is hidden (never shown to the user).
+      It exists solely to run MediaRecorder + AudioContext + Socket.IO,
+      which require a DOM context unavailable in the service worker.
+    -->
+  </head>
+  <body>
+    <script type="module" src="./offscreen.ts"></script>
+  </body>
+</html>

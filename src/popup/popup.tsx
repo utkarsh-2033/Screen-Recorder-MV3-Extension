@@ -34,7 +34,7 @@ export function App() {
   } = useRecordingState();
 
   // ── Local UI State ────────────────────────────────────────────────────────
-  const [selectedMode, setSelectedMode] = useState<RecordingMode>(RecordingMode.TAB);
+  const [selectedMode, setSelectedMode] = useState<RecordingMode>(RecordingMode.CAMERA_AND_SCREEN);
   const [quality, setQuality] = useState<VideoQuality>(VideoQuality.HD_1080P);
   const [includeMic, setIncludeMic] = useState(true);
   const [audioDeviceId, setAudioDeviceId] = useState<string | undefined>();
